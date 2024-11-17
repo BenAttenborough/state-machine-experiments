@@ -13,21 +13,32 @@ function initContext() {
   if (!canvas.getContext) {
     throw new Error("No canvas found!");
   }
-  // const ctx = canvas.getContext("2d");
   return {
     canvas: canvas,
     stateChanged: true
   }
 }
 
-// function draw() {
-//   const canvas = document.getElementById("game-canvas")! as HTMLCanvasElement;
-//   MyGame.ctx.clearRect(0, 0, canvas.width, canvas.height);
-//   MyGame.ctx.fillStyle = "#000000";
-//   MyGame.ctx.fillRect(0, 0, canvas.width, canvas.height);
-//   MyGame.ctx.fillStyle = "#FFFFFF";
-//   MyGame.ctx.fillText("MAIN MENU" , 100, 18);
-// }
+interface Model {
+  lives: number;
+  keysPressed: {
+    ArrowRight: boolean,
+    ArrowLeft: boolean,
+    ArrowUp: boolean,
+    ArrowDown: boolean,
+  }
+}
+
+const model: Model =
+{
+  lives: 0,
+  keysPressed: {
+    ArrowRight: false,
+    ArrowLeft: false,
+    ArrowUp: false,
+    ArrowDown: false,
+  },
+}
 
 function update(tFrame = 0) {
   const delta = tFrame - lastTick;
@@ -36,38 +47,81 @@ function update(tFrame = 0) {
 }
 
 class State {
+  id: string;
   draw: (canvas: HTMLCanvasElement) => void;
 
-  constructor(draw) {
-    this.draw = draw;
+  constructor(config) {
+    this.id = config.id;
+    this.draw = config.draw;
   }
 }
 
-const STATE_TITLE = "title"
-const STATE_PLAY = "play"
-
 const titleState = new State(
-  (canvas) => {
-    const ctx = canvas.getContext("2d");
-    ctx.fillText("TITLE STATE", 100, 18);
+  {
+    id: "tit",
+    draw: (canvas) => {
+      const ctx = canvas.getContext("2d");
+      ctx.fillText("TITLE STATE", 100, 18);
+    }
   }
 );
 
 const playState = new State(
-  (canvas: HTMLCanvasElement) => {
-    const ctx: CanvasRenderingContext2D = canvas.getContext("2d")!;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "#000000";
-    ctx.fillRect(0, 0, 50, 50);
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "#FFFFFF";
-    ctx.fillText("MAIN MENU", 100, 18);
+  {
+    id: "play",
+    draw: (canvas: HTMLCanvasElement) => {
+      const ctx: CanvasRenderingContext2D = canvas.getContext("2d")!;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#000000";
+      ctx.fillRect(0, 0, 50, 50);
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#FFFFFF";
+      ctx.fillText("MAIN MENU", 100, 18);
+    }
   }
 );
 
 const states: { [key: string]: State } = {
-  [STATE_TITLE]: titleState,
-  [STATE_PLAY]: playState
+  [titleState.id]: titleState,
+  [playState.id]: playState
+}
+
+function keyboardInput() {
+  window.addEventListener("keydown", (e) => {
+    e.preventDefault();
+    if (e.code === "ArrowRight") {
+      model.keysPressed.ArrowRight = true;
+    }
+    if (e.code === "ArrowLeft") {
+      model.keysPressed.ArrowLeft = true;
+    }
+    if (e.code === "ArrowUp") {
+      model.keysPressed.ArrowUp = true;
+    }
+    if (e.code === "ArrowDown") {
+      model.keysPressed.ArrowDown = true;
+    }
+    // if (model.keysPressed.hasOwnProperty(e.code))
+    //   model.keysPressed[e.code] = true;
+  });
+
+  window.addEventListener("keyup", (e) => {
+    e.preventDefault();
+    if (e.code === "ArrowRight") {
+      model.keysPressed.ArrowRight = false;
+    }
+    if (e.code === "ArrowLeft") {
+      model.keysPressed.ArrowLeft = false;
+    }
+    if (e.code === "ArrowUp") {
+      model.keysPressed.ArrowUp = false;
+    }
+    if (e.code === "ArrowDown") {
+      model.keysPressed.ArrowDown = false;
+    }
+    // if (model.keysPressed.hasOwnProperty(e.code))
+    //   model.keysPressed[e.code] = false;
+  });
 }
 
 document.onreadystatechange = () => {
@@ -82,8 +136,7 @@ document.onreadystatechange = () => {
         update(tFrame); // Call your update method. In our case, we give it rAF's timestamp.
         if (MyGame.stateChanged) {
           console.log("State change")
-          // draw();
-          states[STATE_PLAY].draw(MyGame.canvas)
+          states[playState.id].draw(MyGame.canvas)
         }
         MyGame.stateChanged = false;
       }
