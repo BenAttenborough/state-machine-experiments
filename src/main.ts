@@ -44,6 +44,7 @@ function update(tFrame = 0) {
   const delta = tFrame - lastTick;
   lastTick = tFrame;
   model = states[playState.id].update(model, delta)
+
 }
 
 class State {
@@ -71,6 +72,8 @@ const titleState = new State(
   }
 );
 
+
+
 const playState = new State(
   {
     id: "play",
@@ -85,8 +88,9 @@ const playState = new State(
     },
     update: (m, delta) => {
       // console.log("update");
+
       if (m.keysPressed.ArrowUp) {
-        // console.log("Up pressed")
+        console.log("Up pressed")
         m.lives = m.lives + 1;
       }
       return m;
@@ -99,42 +103,38 @@ const states: { [key: string]: State } = {
   [playState.id]: playState
 }
 
-function keyboardInput() {
-  window.addEventListener("keydown", (e) => {
-    e.preventDefault();
-    if (e.code === "ArrowRight") {
-      model.keysPressed.ArrowRight = true;
-    }
-    if (e.code === "ArrowLeft") {
-      model.keysPressed.ArrowLeft = true;
-    }
-    if (e.code === "ArrowUp") {
-      model.keysPressed.ArrowUp = true;
-    }
-    if (e.code === "ArrowDown") {
-      model.keysPressed.ArrowDown = true;
-    }
-    // if (model.keysPressed.hasOwnProperty(e.code))
-    //   model.keysPressed[e.code] = true;
-  });
+function functionKeyboardKeydown(e) {
+  e.preventDefault();
+  if (e.code === "ArrowUp") {
+    model.keysPressed.ArrowUp = true;
+  }
+}
 
-  window.addEventListener("keyup", (e) => {
-    e.preventDefault();
-    if (e.code === "ArrowRight") {
-      model.keysPressed.ArrowRight = false;
-    }
-    if (e.code === "ArrowLeft") {
-      model.keysPressed.ArrowLeft = false;
-    }
-    if (e.code === "ArrowUp") {
-      model.keysPressed.ArrowUp = false;
-    }
-    if (e.code === "ArrowDown") {
-      model.keysPressed.ArrowDown = false;
-    }
-    // if (model.keysPressed.hasOwnProperty(e.code))
-    //   model.keysPressed[e.code] = false;
-  });
+function functionKeyboardKeyup(e) {
+  e.preventDefault();
+  if (e.code === "ArrowUp") {
+    model.keysPressed.ArrowUp = false;
+  }
+}
+
+function debounce(func, timeout = 300) {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => { func.apply(this, args); }, timeout);
+  };
+}
+
+function saveInput() {
+  console.log('Saving data');
+}
+
+
+function keyboardInput() {
+  console.log("Only called once?")
+  // window.addEventListener("keydown", processInput);
+  window.addEventListener("keydown", functionKeyboardKeydown);
+  window.addEventListener("keyup", functionKeyboardKeyup);
 }
 
 document.onreadystatechange = () => {
