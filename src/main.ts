@@ -20,6 +20,7 @@ function initContext() {
 }
 
 interface Model {
+  currentState: StateName;
   lives: number;
   keysPressed: {
     ArrowRight: boolean,
@@ -31,6 +32,7 @@ interface Model {
 
 let model: Model =
 {
+  currentState: "TITLE",
   lives: 0,
   keysPressed: {
     ArrowRight: false,
@@ -43,12 +45,15 @@ let model: Model =
 function update(tFrame = 0) {
   const delta = tFrame - lastTick;
   lastTick = tFrame;
-  model = states[playState.id].update(model, delta)
-
+  model = states[model.currentState].update(model, delta)
 }
 
+// const StateTitle = "TITLE"
+// const StatePlay = "PLAY"
+type StateName = "TITLE" | "PLAY";
+
 class State {
-  id: string;
+  id: StateName;
   draw: (canvas: HTMLCanvasElement) => void;
   update: (m: Model, delta: number) => Model;
 
@@ -64,6 +69,9 @@ const titleState = new State(
     id: "title",
     draw: (canvas) => {
       const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#000000";
+
       ctx.fillText("TITLE STATE", 100, 18);
     },
     update: (m, delta) => {
@@ -99,56 +107,25 @@ const playState = new State(
 );
 
 const states: { [key: string]: State } = {
-  [titleState.id]: titleState,
-  [playState.id]: playState
-}
-
-function functionKeyboardKeydown(e) {
-  e.preventDefault();
-  if (e.code === "ArrowUp") {
-    console.log("Arrow up");
-    // model.keysPressed.ArrowUp = true;
-  }
+  "TITLE": titleState,
+  "PLAY": playState
 }
 
 function functionKeyboardKeyup(e) {
   e.preventDefault();
   if (e.code === "ArrowUp") {
-    model.keysPressed.ArrowUp = false;
+    console.log("Arrow up");
+
+    if (model.currentState === "TITLE") {
+      model.currentState = "PLAY";
+    } else {
+      model.currentState = "TITLE";
+    }
   }
 }
 
-// function debounce(func, timeout = 300) {
-//   let timer;
-//   return (...args) => {
-//     clearTimeout(timer);
-//     timer = setTimeout(() => { func.apply(this, args); }, timeout);
-//   };
-// }
-
-function debounce_leading(func, timeout = 100) {
-  let timer;
-  return (...args) => {
-    if (!timer) {
-      func.apply(this, args);
-    }
-    clearTimeout(timer);
-    timer = setTimeout(() => {
-      timer = undefined;
-    }, timeout);
-  };
-}
-
-function saveInput() {
-  console.log('Saving data');
-}
-
-
 function keyboardInput() {
-  console.log("Only called once?")
-  window.addEventListener("keydown", debounce_leading(functionKeyboardKeydown));
-  // window.addEventListener("keydown", functionKeyboardKeydown);
-  // window.addEventListener("keyup", functionKeyboardKeyup);
+  window.addEventListener("keyup", functionKeyboardKeyup);
 }
 
 document.onreadystatechange = () => {
@@ -169,7 +146,7 @@ document.onreadystatechange = () => {
         // }
         // MyGame.stateChanged = false;
         // console.log("State change")
-        states[playState.id].draw(MyGame.canvas)
+        states[model.currentState].draw(MyGame.canvas)
       }
 
       main(); // Start the cycle
