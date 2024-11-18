@@ -20,7 +20,6 @@ function initContext() {
 
 interface Model {
   currentState: StateName;
-  stateChanged: boolean;
   lives: number;
   keysPressed: {
     ArrowRight: boolean,
@@ -33,7 +32,6 @@ interface Model {
 let model: Model =
 {
   currentState: "TITLE",
-  stateChanged: false,
   lives: 0,
   keysPressed: {
     ArrowRight: false,
@@ -44,8 +42,10 @@ let model: Model =
 }
 
 function transitionState(StateName) {
+  states[model.currentState].exit();
   model.currentState = StateName;
-  model.stateChanged = true;
+  // model.stateChanged = true;
+  states[model.currentState].init();
 }
 
 function update(tFrame = 0) {
@@ -90,6 +90,9 @@ const titleState = new State(
     },
     update: (m, delta) => {
       return m;
+    },
+    exit: () => {
+      console.log("Exiting title state")
     }
   }
 );
@@ -112,6 +115,9 @@ const playState = new State(
     },
     update: (m, delta) => {
       return m;
+    },
+    exit: () => {
+      console.log("Exiting play state")
     }
   }
 );
@@ -129,7 +135,6 @@ function functionKeyboardKeyup(e) {
     if (model.currentState === "TITLE") {
       transitionState("PLAY");
     } else {
-      model.currentState = "TITLE";
       transitionState("TITLE")
     }
   }
@@ -151,12 +156,7 @@ document.onreadystatechange = () => {
         window.requestAnimationFrame(main);
 
         update(tFrame); // Call your update method. In our case, we give it rAF's timestamp.
-        if (model.stateChanged) {
-          console.log("State change")
-          states[model.currentState].init()
-        }
-        model.stateChanged = false;
-        // console.log("State change")
+
         states[model.currentState].draw(MyGame.canvas)
       }
 
