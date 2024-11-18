@@ -15,12 +15,12 @@ function initContext() {
   }
   return {
     canvas: canvas,
-    stateChanged: true
   }
 }
 
 interface Model {
   currentState: StateName;
+  stateChanged: boolean;
   lives: number;
   keysPressed: {
     ArrowRight: boolean,
@@ -33,6 +33,7 @@ interface Model {
 let model: Model =
 {
   currentState: "TITLE",
+  stateChanged: false,
   lives: 0,
   keysPressed: {
     ArrowRight: false,
@@ -40,6 +41,11 @@ let model: Model =
     ArrowUp: false,
     ArrowDown: false,
   },
+}
+
+function transitionState(StateName) {
+  model.currentState = StateName;
+  model.stateChanged = true;
 }
 
 function update(tFrame = 0) {
@@ -54,19 +60,27 @@ type StateName = "TITLE" | "PLAY";
 
 class State {
   id: StateName;
+  init: () => void; // For adding event listeners
   draw: (canvas: HTMLCanvasElement) => void;
   update: (m: Model, delta: number) => Model;
+  exit: () => void;
 
   constructor(config) {
     this.id = config.id;
+    this.init = config.init;
     this.draw = config.draw;
     this.update = config.update;
+    this.exit = config.exit;
   }
 }
 
 const titleState = new State(
   {
     id: "title",
+    init: () => {
+      // window.addEventListener("keyup", functionKeyboardKeyup);
+      console.log("Changed to title state")
+    },
     draw: (canvas) => {
       const ctx = canvas.getContext("2d");
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -80,11 +94,13 @@ const titleState = new State(
   }
 );
 
-
-
 const playState = new State(
   {
     id: "play",
+    init: () => {
+      // window.addEventListener("keyup", functionKeyboardKeyup);
+      console.log("Changed to play state")
+    },
     draw: (canvas: HTMLCanvasElement) => {
       const ctx: CanvasRenderingContext2D = canvas.getContext("2d")!;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -95,12 +111,6 @@ const playState = new State(
       ctx.fillText("PLAY STATE " + model.lives, 100, 18);
     },
     update: (m, delta) => {
-      // console.log("update");
-
-      if (m.keysPressed.ArrowUp) {
-        console.log("Up pressed")
-        m.lives = m.lives + 1;
-      }
       return m;
     }
   }
@@ -117,9 +127,10 @@ function functionKeyboardKeyup(e) {
     console.log("Arrow up");
 
     if (model.currentState === "TITLE") {
-      model.currentState = "PLAY";
+      transitionState("PLAY");
     } else {
       model.currentState = "TITLE";
+      transitionState("TITLE")
     }
   }
 }
@@ -140,11 +151,11 @@ document.onreadystatechange = () => {
         window.requestAnimationFrame(main);
 
         update(tFrame); // Call your update method. In our case, we give it rAF's timestamp.
-        // if (MyGame.stateChanged) {
-        //   console.log("State change")
-        //   states[playState.id].draw(MyGame.canvas)
-        // }
-        // MyGame.stateChanged = false;
+        if (model.stateChanged) {
+          console.log("State change")
+          states[model.currentState].init()
+        }
+        model.stateChanged = false;
         // console.log("State change")
         states[model.currentState].draw(MyGame.canvas)
       }
