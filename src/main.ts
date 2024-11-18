@@ -106,7 +106,8 @@ const states: { [key: string]: State } = {
 function functionKeyboardKeydown(e) {
   e.preventDefault();
   if (e.code === "ArrowUp") {
-    model.keysPressed.ArrowUp = true;
+    console.log("Arrow up");
+    // model.keysPressed.ArrowUp = true;
   }
 }
 
@@ -117,11 +118,24 @@ function functionKeyboardKeyup(e) {
   }
 }
 
-function debounce(func, timeout = 300) {
+// function debounce(func, timeout = 300) {
+//   let timer;
+//   return (...args) => {
+//     clearTimeout(timer);
+//     timer = setTimeout(() => { func.apply(this, args); }, timeout);
+//   };
+// }
+
+function debounce_leading(func, timeout = 100) {
   let timer;
   return (...args) => {
+    if (!timer) {
+      func.apply(this, args);
+    }
     clearTimeout(timer);
-    timer = setTimeout(() => { func.apply(this, args); }, timeout);
+    timer = setTimeout(() => {
+      timer = undefined;
+    }, timeout);
   };
 }
 
@@ -132,9 +146,9 @@ function saveInput() {
 
 function keyboardInput() {
   console.log("Only called once?")
-  // window.addEventListener("keydown", processInput);
-  window.addEventListener("keydown", functionKeyboardKeydown);
-  window.addEventListener("keyup", functionKeyboardKeyup);
+  window.addEventListener("keydown", debounce_leading(functionKeyboardKeydown));
+  // window.addEventListener("keydown", functionKeyboardKeydown);
+  // window.addEventListener("keyup", functionKeyboardKeyup);
 }
 
 document.onreadystatechange = () => {
