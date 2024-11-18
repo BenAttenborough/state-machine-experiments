@@ -6,17 +6,16 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
 `;
 
 let lastTick = performance.now();
-const MyGame = initContext();
 
-function initContext() {
+function getGlobalCanvas(): HTMLCanvasElement {
   const canvas = document.getElementById("game-canvas")! as HTMLCanvasElement;
   if (!canvas.getContext) {
     throw new Error("No canvas found!");
   }
-  return {
-    canvas: canvas,
-  }
+  return canvas;
 }
+
+const globalCanvas = getGlobalCanvas();
 
 interface Model {
   currentState: StateName;
@@ -44,7 +43,6 @@ let model: Model =
 function transitionState(StateName) {
   states[model.currentState].exit();
   model.currentState = StateName;
-  // model.stateChanged = true;
   states[model.currentState].init();
 }
 
@@ -54,8 +52,6 @@ function update(tFrame = 0) {
   model = states[model.currentState].update(model, delta)
 }
 
-// const StateTitle = "TITLE"
-// const StatePlay = "PLAY"
 type StateName = "TITLE" | "PLAY";
 
 class State {
@@ -78,7 +74,7 @@ const titleState = new State(
   {
     id: "title",
     init: () => {
-      // window.addEventListener("keyup", functionKeyboardKeyup);
+      window.addEventListener("keyup", functionKeyboardKeyup);
       console.log("Changed to title state")
     },
     draw: (canvas) => {
@@ -92,6 +88,7 @@ const titleState = new State(
       return m;
     },
     exit: () => {
+      window.removeEventListener("keyup", functionKeyboardKeyup);
       console.log("Exiting title state")
     }
   }
@@ -101,7 +98,7 @@ const playState = new State(
   {
     id: "play",
     init: () => {
-      // window.addEventListener("keyup", functionKeyboardKeyup);
+      window.addEventListener("keyup", functionKeyboardKeyup);
       console.log("Changed to play state")
     },
     draw: (canvas: HTMLCanvasElement) => {
@@ -117,6 +114,7 @@ const playState = new State(
       return m;
     },
     exit: () => {
+      window.removeEventListener("keyup", functionKeyboardKeyup);
       console.log("Exiting play state")
     }
   }
@@ -140,26 +138,17 @@ function functionKeyboardKeyup(e) {
   }
 }
 
-function keyboardInput() {
-  window.addEventListener("keyup", functionKeyboardKeyup);
-}
-
 document.onreadystatechange = () => {
   if (document.readyState === "complete") {
     // document ready
-    keyboardInput();
+    states[model.currentState].init();
 
     (() => {
       function main(tFrame?: number) {
-        // console.log("FF")
-        // MyGame.stopMain = window.requestAnimationFrame(main);
         window.requestAnimationFrame(main);
-
         update(tFrame); // Call your update method. In our case, we give it rAF's timestamp.
-
-        states[model.currentState].draw(MyGame.canvas)
+        states[model.currentState].draw(globalCanvas)
       }
-
       main(); // Start the cycle
     })();
   }
