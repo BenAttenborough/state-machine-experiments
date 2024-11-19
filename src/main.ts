@@ -1,3 +1,7 @@
+import { State } from "./State";
+import { titleState } from "./states/title";
+import { playState } from "./states/play";
+
 document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
   <div>
     <h1>STATE MACHINE</h1>
@@ -17,17 +21,6 @@ function getGlobalCanvas(): HTMLCanvasElement {
 
 const globalCanvas = getGlobalCanvas();
 
-interface Model {
-  currentState: StateName;
-  lives: number;
-  keysPressed: {
-    ArrowRight: boolean,
-    ArrowLeft: boolean,
-    ArrowUp: boolean,
-    ArrowDown: boolean,
-  }
-}
-
 let model: Model =
 {
   currentState: "TITLE",
@@ -40,11 +33,7 @@ let model: Model =
   },
 }
 
-function transitionState(StateName) {
-  states[model.currentState].exit();
-  model.currentState = StateName;
-  states[model.currentState].init();
-}
+
 
 function update(tFrame = 0) {
   const delta = tFrame - lastTick;
@@ -52,102 +41,21 @@ function update(tFrame = 0) {
   model = states[model.currentState].update(model, delta)
 }
 
-type StateName = "TITLE" | "PLAY";
-
-class State {
-  id: StateName;
-  init: () => void; // For adding event listeners
-  draw: (canvas: HTMLCanvasElement) => void;
-  update: (m: Model, delta: number) => Model;
-  exit: () => void;
-
-  constructor(config) {
-    this.id = config.id;
-    this.init = config.init;
-    this.draw = config.draw;
-    this.update = config.update;
-    this.exit = config.exit;
-  }
-}
-
-const titleState = new State(
-  {
-    id: "title",
-    init: () => {
-      window.addEventListener("keyup", functionKeyboardKeyup);
-      console.log("Changed to title state")
-    },
-    draw: (canvas) => {
-      const ctx = canvas.getContext("2d");
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = "#000000";
-
-      ctx.fillText("TITLE STATE", 100, 18);
-    },
-    update: (m, delta) => {
-      return m;
-    },
-    exit: () => {
-      window.removeEventListener("keyup", functionKeyboardKeyup);
-      console.log("Exiting title state")
-    }
-  }
-);
-
-const playState = new State(
-  {
-    id: "play",
-    init: () => {
-      window.addEventListener("keyup", functionKeyboardKeyup);
-      console.log("Changed to play state")
-    },
-    draw: (canvas: HTMLCanvasElement) => {
-      const ctx: CanvasRenderingContext2D = canvas.getContext("2d")!;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = "#000000";
-      ctx.fillRect(0, 0, 50, 50);
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = "#FFFFFF";
-      ctx.fillText("PLAY STATE " + model.lives, 100, 18);
-    },
-    update: (m, delta) => {
-      return m;
-    },
-    exit: () => {
-      window.removeEventListener("keyup", functionKeyboardKeyup);
-      console.log("Exiting play state")
-    }
-  }
-);
-
 const states: { [key: string]: State } = {
   "TITLE": titleState,
   "PLAY": playState
 }
 
-function functionKeyboardKeyup(e) {
-  e.preventDefault();
-  if (e.code === "ArrowUp") {
-    console.log("Arrow up");
-
-    if (model.currentState === "TITLE") {
-      transitionState("PLAY");
-    } else {
-      transitionState("TITLE")
-    }
-  }
-}
-
 document.onreadystatechange = () => {
   if (document.readyState === "complete") {
     // document ready
-    states[model.currentState].init();
+    states[model.currentState].init(states, model);
 
     (() => {
       function main(tFrame?: number) {
         window.requestAnimationFrame(main);
         update(tFrame); // Call your update method. In our case, we give it rAF's timestamp.
-        states[model.currentState].draw(globalCanvas)
+        states[model.currentState].draw(globalCanvas, model)
       }
       main(); // Start the cycle
     })();
