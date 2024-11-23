@@ -16,7 +16,8 @@ export const playState = new State(
             ctx.fillStyle = "#FFFFFF";
             ctx.fillText("PLAY STATE", 270, 48);
             ctx.fillText("SCORE " + model.score, 280, 230);
-            ctx.fillText("Use up and down keys to adjust score", 140, 400);
+            ctx.fillText("Use up and down keys to adjust score", 140, 370);
+            ctx.fillText("Press escape to return to title screen", 143, 400);
         },
         update: (m, delta) => {
             return m;
