@@ -3,8 +3,8 @@ import { State, transitionState } from "../State";
 export const playState = new State(
     {
         id: "play",
-        init: (states, model) => {
-            window.addEventListener("keyup", (e) => { playKeyboardKeyup(states, model, e) });
+        init: (states, model, abortEventHandler) => {
+            window.addEventListener("keyup", (e) => { playKeyboardKeyup(states, model, abortEventHandler, e) }, {signal: abortEventHandler.signal});
             console.log("Changed to play state")
         },
         draw: (canvas: HTMLCanvasElement, model: Model) => {
@@ -19,22 +19,17 @@ export const playState = new State(
         update: (m, delta) => {
             return m;
         },
-        exit: (states, model) => {
-            window.removeEventListener("keyup", (e) => { playKeyboardKeyup(states, model, e) });
+        exit: (states, model, abortEventHandler) => {
+            abortEventHandler.abort();
             console.log("Exiting play state")
         }
     }
 );
 
-function playKeyboardKeyup(states: { [key: string]: State }, model: Model, e) {
+function playKeyboardKeyup(states: { [key: string]: State }, model: Model, abortEventHandler: AbortController, e) {
     e.preventDefault();
     if (e.code === "ArrowUp") {
         console.log("Arrow up PLAY");
-
-        if (model.currentState === "TITLE") {
-            transitionState("PLAY", states, model);
-        } else {
-            transitionState("TITLE", states, model)
-        }
+        transitionState("TITLE", states, model, abortEventHandler)
     }
 }

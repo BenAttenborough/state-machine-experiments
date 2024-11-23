@@ -1,11 +1,9 @@
-
-
 export class State {
     id: StateName;
-    init: (states: { [key: string]: State }, model: Model) => void; // For adding event listeners
+    init: (states: { [key: string]: State }, model: Model, abortEventHandler: AbortController) => void; // For adding event listeners
     draw: (canvas: HTMLCanvasElement, model: Model) => void;
     update: (m: Model, delta: number) => Model;
-    exit: (states: { [key: string]: State }, model: Model) => void;
+    exit: (states: { [key: string]: State }, model: Model, abortEventHandler: AbortController) => void;
 
     constructor(config) {
         this.id = config.id;
@@ -16,8 +14,8 @@ export class State {
     }
 }
 
-export function transitionState(stateName: StateName, states: { [key: string]: State }, model: Model) {
-    states[model.currentState].exit(states, model);
+export function transitionState(stateName: StateName, states: { [key: string]: State }, model: Model, abortEventHandler: AbortController) {
+    states[model.currentState].exit(states, model, abortEventHandler);
     model.currentState = stateName;
-    states[model.currentState].init(states, model);
+    states[model.currentState].init(states, model, new AbortController());
 }

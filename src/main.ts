@@ -33,8 +33,6 @@ let model: Model =
   },
 }
 
-
-
 function update(tFrame = 0) {
   const delta = tFrame - lastTick;
   lastTick = tFrame;
@@ -49,7 +47,8 @@ const states: { [key: string]: State } = {
 document.onreadystatechange = () => {
   if (document.readyState === "complete") {
     // document ready
-    states[model.currentState].init(states, model);
+    console.log("debug")
+    states[model.currentState].init(states, model, (new AbortController()));
 
     (() => {
       function main(tFrame?: number) {
