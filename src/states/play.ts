@@ -4,7 +4,7 @@ export const playState = new State(
     {
         id: "play",
         init: (states, model, abortEventHandler) => {
-            window.addEventListener("keyup", (e) => { playKeyboardKeyup(states, model, abortEventHandler, e) }, {signal: abortEventHandler.signal});
+            window.addEventListener("keyup", (e) => { playKeyboardKeyup(states, model, abortEventHandler, e) }, { signal: abortEventHandler.signal });
             console.log("Changed to play state")
         },
         draw: (canvas: HTMLCanvasElement, model: Model) => {
@@ -14,7 +14,7 @@ export const playState = new State(
             ctx.fillRect(0, 0, 50, 50);
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = "#FFFFFF";
-            ctx.fillText("PLAY STATE " + model.lives, 100, 18);
+            ctx.fillText("PLAY STATE", 270, 48);
         },
         update: (m, delta) => {
             return m;
@@ -28,8 +28,8 @@ export const playState = new State(
 
 function playKeyboardKeyup(states: { [key: string]: State }, model: Model, abortEventHandler: AbortController, e) {
     e.preventDefault();
-    if (e.code === "ArrowUp") {
-        console.log("Arrow up PLAY");
+    if (e.code === "Escape") {
+        console.log("Escape PLAY");
         transitionState("TITLE", states, model, abortEventHandler)
     }
 }

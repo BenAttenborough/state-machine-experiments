@@ -1,10 +1,11 @@
+import "./style.css";
 import { State } from "./State";
 import { titleState } from "./states/title";
 import { playState } from "./states/play";
 
 document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
-  <div>
-    <h1>STATE MACHINE</h1>
+  <div class="main">
+    <h1 class="title">STATE MACHINE</h1>
     <canvas id="game-canvas" width="670" height="480"></canvas>
   </div>
 `;
@@ -16,6 +17,12 @@ function getGlobalCanvas(): HTMLCanvasElement {
   if (!canvas.getContext) {
     throw new Error("No canvas found!");
   }
+  const ratio = window.devicePixelRatio;
+  canvas.width = 670 * ratio;
+  canvas.height = 480 * ratio;
+  canvas.style.width = 670 + "px";
+  canvas.style.height = 480 + "px";
+  canvas.getContext("2d")!.scale(ratio, ratio);
   return canvas;
 }
 
