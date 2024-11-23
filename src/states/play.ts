@@ -15,6 +15,8 @@ export const playState = new State(
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = "#FFFFFF";
             ctx.fillText("PLAY STATE", 270, 48);
+            ctx.fillText("SCORE " + model.score, 280, 230);
+            ctx.fillText("Use up and down keys to adjust score", 140, 400);
         },
         update: (m, delta) => {
             return m;
@@ -31,5 +33,15 @@ function playKeyboardKeyup(states: { [key: string]: State }, model: Model, abort
     if (e.code === "Escape") {
         console.log("Escape PLAY");
         transitionState("TITLE", states, model, abortEventHandler)
+    }
+    if (e.code === "ArrowUp") {
+        console.log("Increase score");
+        model.score++;
+    }
+    if (e.code === "ArrowDown") {
+        console.log("Decrease score");
+        if (model.score > 0) {
+            model.score--;
+        }
     }
 }

@@ -31,7 +31,7 @@ const globalCanvas = getGlobalCanvas();
 let model: Model =
 {
   currentState: "TITLE",
-  lives: 0,
+  score: 0,
   keysPressed: {
     ArrowRight: false,
     ArrowLeft: false,
